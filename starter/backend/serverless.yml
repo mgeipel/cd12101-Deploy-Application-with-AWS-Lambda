@@ -2,6 +2,7 @@ service: serverless-todo-app
 
 plugins:
   - serverless-iam-roles-per-function
+  - serverless-reqvalidator-plugin
 
 frameworkVersion: '4'
 
@@ -63,12 +64,18 @@ functions:
           method: post
           authorizer: Auth
           path: todos
+          cors: true
+          request:
+            schemas:
+              application/json: ${file(./models/todo-create.json)}
+
     iamRoleStatementsInherit: true
     iamRoleStatements:
       - Effect: Allow
         Action:
           - dynamodb:PutItem
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
+
 
 
   # TODO: Configure this function
@@ -80,7 +87,9 @@ functions:
           authorizer: Auth
           path: todos/{todoId}
           cors: true
-
+          request:
+            schemas:
+              application/json: ${file(./models/todo-update.json)}
     iamRoleStatementsInherit: true
     iamRoleStatements:
       - Effect: Allow

@@ -1,0 +1,19 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "title": "todo",
+    "properties": {
+        "name": {
+            "type": "string",
+            "description": "Name of a task list item (e.g. 'Change a light bulb')"
+        },
+        "dueDate": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Date and time by which a task list item should be completed"
+        }
+
+    },
+    "required": ["name", "dueDate"],
+    "additionalProperties": false
+}
