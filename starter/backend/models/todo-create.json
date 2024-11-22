@@ -4,13 +4,10 @@
     "title": "todo",
     "properties": {
         "name": {
-            "type": "string",
-            "description": "Name of a task list item (e.g. 'Change a light bulb')"
+            "type": "string"
         },
         "dueDate": {
-            "type": "string",
-            "format": "date-time",
-            "description": "Date and time by which a task list item should be completed"
+            "type": "string"
         }
 
     },
