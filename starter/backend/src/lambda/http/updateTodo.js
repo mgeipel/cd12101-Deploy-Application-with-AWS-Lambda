@@ -4,9 +4,9 @@ import httpErrorHandler from '@middy/http-error-handler'
 import { getUserId } from '../utils.mjs'
 import { updateTodo } from '../../businessLogic/todos.mjs'
 import { createLogger } from '../../utils/logger.mjs'
-import { todoExists } from '../../businessLogic/todos.mjs'
 
-const logger = createLogger('getTodos')
+
+const logger = createLogger('updateTodo')
 
 export const handler = middy()
   .use(httpErrorHandler())
@@ -16,29 +16,16 @@ export const handler = middy()
     })
   )
   .handler(async (event) => {
-    const userId = getUserId(event)
     const todo = JSON.parse(event.body)
-    const todoId = event.pathParameters.todoId
+    todo.todoId = event.pathParameters.todoId;
+    todo.userId = getUserId(event)
+
     logger.info('Updating todo', {todo})
-    
-    if(! await todoExists(todoId, userId)){
-      logger.warn('Todo does not exist', {todoId})
-      throw createError(
-        404,
-        JSON.stringify({
-          error: "Todo with id " + todoId + "does not exist"
-        })
-      )
-    }
 
-    todo.todoId = todoId;
-
-    const updatedTodo = updateTodo(todo);
+    const updatedTodo = await updateTodo(todo);
 
     return {
       statusCode: 201,
-      body: JSON.stringify({
-        updatedTodo
-      })
+      body: JSON.stringify({updatedTodo})
     }
   })

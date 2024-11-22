@@ -1,25 +1,46 @@
-import { DynamoDB } from '@aws-sdk/client-dynamodb'
-import { DynamoDBDocument } from '@aws-sdk/lib-dynamodb'
-import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
-import { v4 as uuidv4 } from 'uuid'
 
-const dynamoDbClient = DynamoDBDocument.from(new DynamoDB())
+import { PutObjectCommand, DeleteObjectCommand, S3Client } from '@aws-sdk/client-s3'
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
+import { createLogger } from '../utils/logger.mjs'
+
+const logger = createLogger('attachementUtils')
+
 const s3Client = new S3Client()
 
 
-const todosTable = process.env.TODOTS_TABLE
 const bucketName = process.env.ATTACHMENTS_S3_BUCKET
 const urlExpiration = parseInt(process.env.SIGNED_URL_EXPIRATION)
 
 
-async function getUploadUrl(imageId) {
-    const command = new PutObjectCommand({
-      Bucket: bucketName,
-      Key: imageId
+export async function getUploadUrl(imageId) {
+  const command = new PutObjectCommand({
+    Bucket: bucketName,
+    Key: imageId
+  })
+
+  const url = await getSignedUrl(s3Client, command, {
+    expiresIn: urlExpiration
+  })
+  return url
+}
+
+export async function deleteAttachement(todoId) {
+  try {
+
+    logger.info('Deleting attchement of', { todoId })
+    const command = new DeleteObjectCommand({
+      Bucket: bucketName, 
+      Key: todoId         
     })
-    const url = await getSignedUrl(s3Client, command, {
-      expiresIn: urlExpiration
-    })
-    return url
+    const response = await s3Client.send(command);
+
+    return response;
+  } catch (error) {
+    if (error.name === 'NoSuchKey') {
+      logger.info('File does not exist, skipping delete.');
+      return
+    }
+    logger.error('Error deleting file:', error);
+    throw error; // Re-throw unexpected errors
   }
+}
