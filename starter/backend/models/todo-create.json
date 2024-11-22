@@ -4,7 +4,8 @@
     "title": "todo",
     "properties": {
         "name": {
-            "type": "string"
+            "type": "string",
+            "minLength": 2
         },
         "dueDate": {
             "type": "string"
